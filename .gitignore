@@ -1,0 +1,40 @@
+# Dependências
+node_modules/
+
+# Sessão do WhatsApp
+whatsapp-session/
+resources/server/whatsapp-session/
+
+# Backups automáticos
+resources/server/backups/
+
+# Cache
+.wwebjs_cache/
+resources/server/.wwebjs_cache/
+
+# Dados locais (cada usuário tem os seus)
+resources/server/shared-data.json
+
+# Logs
+*.log
+error.log
+output.log
+
+# Binários do Electron (muito pesados para o git)
+*.exe
+*.dll
+*.dat
+*.bin
+*.pak
+*.asar
+
+# Locales do Chromium
+locales/
+
+# Arquivos do sistema
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Pasta win-unpacked duplicada
+win-unpacked/

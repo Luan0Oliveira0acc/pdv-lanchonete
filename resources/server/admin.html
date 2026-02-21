@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDV Lanchonete - Backup & Restauração</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0f;
+      color: #e4e4e7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #e4e4e7, #a1a1aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #71717a;
+      font-size: 14px;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      flex: 1;
+      min-width: 130px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .stat:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e4e4e7;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .card-icon.backup {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+      color: #22c55e;
+    }
+
+    .card-icon.restore {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+      color: #3b82f6;
+    }
+
+    .card-icon.reset {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+      color: #ef4444;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #71717a;
+      margin-top: 2px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-backup {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      box-shadow: 0 4px 16px rgba(34, 197, 94, 0.25);
+    }
+
+    .btn-backup:hover {
+      box-shadow: 0 6px 24px rgba(34, 197, 94, 0.35);
+      filter: brightness(1.1);
+    }
+
+    .btn-restore {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-restore:hover {
+      box-shadow: 0 6px 24px rgba(59, 130, 246, 0.35);
+      filter: brightness(1.1);
+    }
+
+    .btn-reset {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-reset:hover {
+      box-shadow: 0 6px 24px rgba(239, 68, 68, 0.35);
+      filter: brightness(1.1);
+    }
+
+    .reset-warning {
+      background: rgba(239, 68, 68, 0.06);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #fca5a5;
+      line-height: 1.5;
+    }
+
+    .reset-warning strong {
+      color: #f87171;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: none !important;
+    }
+
+    /* Drop zone */
+    .dropzone {
+      border: 2px dashed rgba(59, 130, 246, 0.25);
+      border-radius: 12px;
+      padding: 32px 20px;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: all 0.3s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: rgba(59, 130, 246, 0.6);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .dropzone.dragover {
+      transform: scale(1.01);
+    }
+
+    .dropzone-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+      opacity: 0.7;
+    }
+
+    .dropzone-text {
+      font-size: 14px;
+      color: #a1a1aa;
+    }
+
+    .dropzone-text strong {
+      color: #3b82f6;
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* Selected file info */
+    .file-info {
+      display: none;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    .file-info.visible {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-info-icon {
+      font-size: 22px;
+    }
+
+    .file-info-name {
+      font-weight: 600;
+      color: #e4e4e7;
+    }
+
+    .file-info-size {
+      color: #71717a;
+      font-size: 12px;
+    }
+
+    .file-info-preview {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #a1a1aa;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 999;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 90%;
+      backdrop-filter: blur(16px);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .toast.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Back link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #71717a;
+      text-decoration: none;
+      font-size: 13px;
+      margin-bottom: 24px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: #a1a1aa;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <a href="http://localhost:5173" class="back-link">← Voltar ao PDV</a>
+
+    <div class="header">
+      <div class="header-icon">🔧</div>
+      <h1>Backup & Restauração</h1>
+      <p>Gerencie os dados do sistema PDV Lanchonete</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="stats">
+      <div class="stat">
+        <div class="stat-value" id="stat-products">-</div>
+        <div class="stat-label">Produtos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-orders">-</div>
+        <div class="stat-label">Pedidos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-customers">-</div>
+        <div class="stat-label">Clientes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-size">-</div>
+        <div class="stat-label">Tamanho</div>
+      </div>
+    </div>
+
+    <!-- Backup Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon backup">📥</div>
+        <div>
+          <div class="card-title">Fazer Backup</div>
+          <div class="card-desc">Baixe todos os dados como um arquivo JSON</div>
+        </div>
+      </div>
+      <button class="btn btn-backup" id="btn-backup" onclick="fazerBackup()">
+        📥 Baixar Backup
+      </button>
+    </div>
+
+    <!-- Restore Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon restore">📤</div>
+        <div>
+          <div class="card-title">Restaurar Backup</div>
+          <div class="card-desc">Envie um arquivo de backup para restaurar os dados</div>
+        </div>
+      </div>
+
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="file-input" accept=".json" onchange="selecionarArquivo(event)">
+        <div class="dropzone-icon">📁</div>
+        <div class="dropzone-text">
+          Arraste um arquivo <strong>.json</strong> aqui<br>
+          <span style="font-size:12px; color:#52525b">ou clique para selecionar</span>
+        </div>
+      </div>
+
+      <div class="file-info" id="file-info">
+        <div class="file-info-icon">📄</div>
+        <div>
+          <div class="file-info-name" id="file-name">-</div>
+          <div class="file-info-size" id="file-size">-</div>
+          <div class="file-info-preview" id="file-preview">-</div>
+        </div>
+      </div>
+
+      <button class="btn btn-restore" id="btn-restore" onclick="restaurarBackup()" disabled>
+        📤 Restaurar Dados
+      </button>
+    </div>
+
+    <!-- Reset Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon reset">🗑️</div>
+        <div>
+          <div class="card-title">Zerar Dados</div>
+          <div class="card-desc">Apague todos os dados e comece do zero</div>
+        </div>
+      </div>
+
+      <div class="reset-warning">
+        ⚠️ <strong>Cuidado!</strong> Isso apagará <strong>todos</strong> os produtos, pedidos, clientes, fiados e
+        gastos.
+        Apenas as categorias padrão serão mantidas. Um backup automático será criado antes do reset.
+      </div>
+
+      <button class="btn btn-reset" id="btn-reset" onclick="resetarDados()">
+        🗑️ Zerar Todos os Dados
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = 'http://localhost:3002';
+    let arquivoSelecionado = null;
+    let dadosParaRestaurar = null;
+
+    // ========================
+    // Stats
+    // ========================
+    async function carregarStats() {
+      try {
+        const res = await fetch(`${API}/api/data`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          const d = json.data;
+          document.getElementById('stat-products').textContent = (d.products || []).length;
+          document.getElementById('stat-orders').textContent = (d.orders || []).length;
+          document.getElementById('stat-customers').textContent = (d.customers || []).length;
+          const bytes = new Blob([JSON.stringify(d)]).size;
+          document.getElementById('stat-size').textContent = formatarBytes(bytes);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar stats:', err);
+      }
+    }
+
+    function formatarBytes(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // ========================
+    // Backup
+    // ========================
+    async function fazerBackup() {
+      const btn = document.getElementById('btn-backup');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Gerando backup...';
+
+      try {
+        const res = await fetch(`${API}/api/backup`);
+        if (!res.ok) throw new Error('Erro ao baixar backup');
+
+        const blob = await res.blob();
+        const now = new Date();
+        const timestamp = [
+          now.getFullYear(),
+          String(now.getMonth() + 1).padStart(2, '0'),
+          String(now.getDate()).padStart(2, '0'),
+          '_',
+          String(now.getHours()).padStart(2, '0'),
+          String(now.getMinutes()).padStart(2, '0')
+        ].join('');
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `backup-pdv-${timestamp}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+
+        showToast('✅ Backup baixado com sucesso!', 'success');
+      } catch (err) {
+        showToast('❌ Erro ao fazer backup: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '📥 Baixar Backup';
+      }
+    }
+
+    // ========================
+    // Restore
+    // ========================
+    function selecionarArquivo(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.name.endsWith('.json')) {
+        showToast('❌ Selecione um arquivo .json', 'error');
+        return;
+      }
+
+      arquivoSelecionado = file;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          dadosParaRestaurar = data;
+
+          // Mostrar info do arquivo
+          document.getElementById('file-name').textContent = file.name;
+          document.getElementById('file-size').textContent = formatarBytes(file.size);
+
+          const prods = (data.products || []).length;
+          const orders = (data.orders || []).length;
+          const customers = (data.customers || []).length;
+          document.getElementById('file-preview').textContent =
+            `${prods} produtos · ${orders} pedidos · ${customers} clientes`;
+
+          document.getElementById('file-info').classList.add('visible');
+          document.getElementById('btn-restore').disabled = false;
+        } catch (err) {
+          showToast('❌ Arquivo inválido: não é um JSON válido', 'error');
+          dadosParaRestaurar = null;
+          document.getElementById('btn-restore').disabled = true;
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    async function restaurarBackup() {
+      if (!dadosParaRestaurar) {
+        showToast('❌ Nenhum arquivo selecionado', 'error');
+        return;
+      }
+
+      const confirmar = confirm(
+        '⚠️ ATENÇÃO!\n\n' +
+        'Isso vai SUBSTITUIR todos os dados atuais pelos dados do backup.\n\n' +
+        'Tem certeza que deseja continuar?'
+      );
+      if (!confirmar) return;
+
+      const btn = document.getElementById('btn-restore');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Restaurando...';
+
+      try {
+        const res = await fetch(`${API}/api/restore`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: dadosParaRestaurar })
+        });
+
+        const json = await res.json();
+        if (json.success) {
+          showToast('✅ Dados restaurados com sucesso!', 'success');
+          dadosParaRestaurar = null;
+          arquivoSelecionado = null;
+          document.getElementById('file-info').classList.remove('visible');
+          document.getElementById('file-input').value = '';
+          btn.disabled = true;
+          carregarStats();
+        } else {
+          throw new Error(json.error || 'Erro ao restaurar');
+        }
+      } catch (err) {
+        showToast('❌ Erro ao restaurar: ' + err.message, 'error');
+        btn.disabled = false;
+      } finally {
+        btn.innerHTML = '📤 Restaurar Dados';
+      }
+    }
+
+    // ========================
+    // Drag & Drop
+    // ========================
+    const dropzone = document.getElementById('dropzone');
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', e => {
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('file-input').files = dt.files;
+        selecionarArquivo({ target: { files: [file] } });
+      }
+    });
+
+    // ========================
+    // Toast
+    // ========================
+    let toastTimeout;
+    function showToast(msg, type) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast ${type}`;
+      clearTimeout(toastTimeout);
+      requestAnimationFrame(() => {
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
+      });
+    }
+
+    // ========================
+    // Reset
+    // ========================
+    async function resetarDados() {
+      const confirm1 = confirm(
+        '⚠️ ATENÇÃO!\n\n' +
+        'Isso vai APAGAR todos os dados:\n' +
+        '• Produtos\n• Pedidos\n• Clientes\n• Fiados\n• Gastos\n\n' +
+        'Um backup automático será salvo no servidor.\n\n' +
+        'Tem certeza que deseja continuar?'
+      );
+      if (!confirm1) return;
+
+      const confirm2 = prompt(
+        'Para confirmar, digite RESETAR (em maiúsculas):'
+      );
+      if (confirm2 !== 'RESETAR') {
+        showToast('❌ Reset cancelado — texto de confirmação incorreto', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-reset');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Zerando dados...';
+
+      try {
+        const res = await fetch(`${API}/api/reset`, { method: 'POST' });
+        const json = await res.json();
+        if (json.success) {
+          showToast('✅ Dados zerados com sucesso! Backup automático salvo.', 'success');
+          carregarStats();
+        } else {
+          throw new Error(json.error || 'Erro ao resetar');
+        }
+      } catch (err) {
+        showToast('❌ Erro ao resetar: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🗑️ Zerar Todos os Dados';
+      }
+    }
+
+    // Init
+    carregarStats();
+  </script>
+
+</body>
+
+</html>

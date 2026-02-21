@@ -1,0 +1,23 @@
+{
+  "name": "whatsapp-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Servidor WhatsApp para envio automático de mensagens",
+  "main": "whatsapp-server.js",
+  "scripts": {
+    "start": "node whatsapp-server.js",
+    "dev": "node --watch whatsapp-server.js",
+    "data-server": "node data-server.js",
+    "web-server": "node web-server.js",
+    "start-all": "concurrently \"npm run start\" \"npm run data-server\" \"npm run web-server\""
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "whatsapp-web.js": "^1.23.0",
+    "qrcode-terminal": "^0.12.0",
+    "qrcode": "^1.5.3",
+    "puppeteer": "^21.6.1"
+  }
+}
+
