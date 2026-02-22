@@ -50,7 +50,7 @@ O sistema também conta com uma integração com WhatsApp Web para envio automá
 
 ### 🎯 Motivação
 
-Este projeto foi desenvolvido como parte dos estudos no **2º semestre de Ciência da Computação**, com o objetivo de aplicar conceitos de:
+Este projeto foi desenvolvido para a lanchonete Linda Massa Localiza em São bernardo do Campo:
 
 - Desenvolvimento de aplicações desktop com **Electron**
 - Construção de interfaces modernas com **React** e **Vite**
